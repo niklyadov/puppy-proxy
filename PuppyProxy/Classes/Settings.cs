@@ -1,7 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Text;
-using WatsonWebserver;
+﻿using System.Text;
 
 namespace PuppyProxy
 {
@@ -19,7 +16,7 @@ namespace PuppyProxy
         /// Enable or disable the console.
         /// </summary>
         public bool EnableConsole { get; set; }
-         
+
         /// <summary>
         /// Logging settings.
         /// </summary>
@@ -34,11 +31,11 @@ namespace PuppyProxy
         /// Default values for system settings.
         /// </summary>
         /// <returns>Settings object.</returns>
-        public static Settings Default() 
+        public static Settings Default()
         {
             Settings ret = new Settings();
             ret.Environment = "linux";
-            ret.EnableConsole = true; 
+            ret.EnableConsole = true;
             ret.Logging = SettingsLogging.Default();
             ret.Proxy = SettingsProxy.Default();
             return ret;
@@ -67,8 +64,8 @@ namespace PuppyProxy
                 return ret;
             }
         }
-	}
-     
+    }
+
     /// <summary>
     /// Logging settings.
     /// </summary>
@@ -144,7 +141,7 @@ namespace PuppyProxy
         /// Maximum number of threads to support.
         /// </summary>
         public int MaxThreads { get; set; }
-         
+
         /// <summary>
         /// Default values for proxy server settings.
         /// </summary>
@@ -156,7 +153,7 @@ namespace PuppyProxy
             ret.ListenerPort = 8000;
             ret.ListenerIpAddress = "0.0.0.0";
             ret.Ssl = false;
-            ret.MaxThreads = 100; 
+            ret.MaxThreads = 100;
             return ret;
         }
     }

@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using SyslogLogging;
 using WatsonWebserver;
-using SyslogLogging;
 
 namespace PuppyProxy
 {
@@ -35,11 +30,11 @@ namespace PuppyProxy
 
             _Logging = logging;
         }
-         
+
         #endregion
 
         #region Public-Methods
-         
+
         /// <summary>
         /// Validate whether or not a request is permitted or not.
         /// </summary>

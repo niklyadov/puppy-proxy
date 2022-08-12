@@ -1,11 +1,10 @@
-﻿using System;
+﻿using Newtonsoft.Json;
 using System.Text;
-using Newtonsoft.Json;
 
 namespace PuppyProxy
-{ 
+{
     internal static class Common
-    { 
+    {
         internal static bool InputBoolean(string question, bool yesDefault)
         {
             Console.Write(question);
@@ -48,7 +47,7 @@ namespace PuppyProxy
                 return false;
             }
         }
-         
+
         internal static string InputString(string question, string defaultAnswer, bool allowNull)
         {
             while (true)
@@ -74,7 +73,7 @@ namespace PuppyProxy
                 return userInput;
             }
         }
-         
+
         internal static int InputInteger(string question, int defaultAnswer, bool positiveOnly, bool allowZero)
         {
             while (true)

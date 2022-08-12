@@ -1,16 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net;
+﻿using SyslogLogging;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
-using System.Text;
-using System.Threading.Tasks;
-using SyslogLogging;
 
 namespace PuppyProxy
-{ 
+{
     /// <summary>
     /// CONNECT tunnel.
     /// </summary>
@@ -31,7 +24,7 @@ namespace PuppyProxy
         /// <summary>
         /// Source TCP port.
         /// </summary>
-        public int SourcePort { get; set; } 
+        public int SourcePort { get; set; }
 
         /// <summary>
         /// Destination IP address.
@@ -105,14 +98,14 @@ namespace PuppyProxy
         /// <param name="client">TCP client instance of the client.</param>
         /// <param name="server">TCP client instance of the server.</param>
         public Tunnel(
-            LoggingModule logging, 
-            string sourceIp, 
-            int sourcePort, 
-            string destIp, 
-            int destPort, 
+            LoggingModule logging,
+            string sourceIp,
+            int sourcePort,
+            string destIp,
+            int destPort,
             string destHostname,
             int destHostPort,
-            TcpClient client, 
+            TcpClient client,
             TcpClient server)
         {
             if (logging == null) throw new ArgumentNullException(nameof(logging));
@@ -128,7 +121,7 @@ namespace PuppyProxy
             _Logging = logging;
             TimestampUtc = DateTime.Now.ToUniversalTime();
             SourceIp = sourceIp;
-            SourcePort = sourcePort; 
+            SourcePort = sourcePort;
             DestIp = destIp;
             DestPort = destPort;
             DestHostname = destHostname;
@@ -141,10 +134,10 @@ namespace PuppyProxy
             ServerTcpClient = server;
             ServerTcpClient.NoDelay = true;
             ServerTcpClient.Client.NoDelay = true;
-            
+
             ClientStream = client.GetStream();
             ServerStream = server.GetStream();
-             
+
             Task.Run(() => ClientReaderAsync());
             Task.Run(() => ServerReaderAsync());
 
@@ -199,7 +192,7 @@ namespace PuppyProxy
 
                 if (ClientTcpClient.Client != null)
                 {
-                    TcpState clientState = GetTcpRemoteState(ClientTcpClient); 
+                    TcpState clientState = GetTcpRemoteState(ClientTcpClient);
 
                     if (clientState == TcpState.Established
                         || clientState == TcpState.Listen
@@ -295,10 +288,10 @@ namespace PuppyProxy
             data = null;
 
             try
-            { 
+            {
                 Stream stream = client.GetStream();
-                 
-                int read = 0; 
+
+                int read = 0;
                 long bufferSize = 65536;
                 byte[] buffer = new byte[bufferSize];
 
@@ -324,12 +317,12 @@ namespace PuppyProxy
                 }
             }
             catch (InvalidOperationException)
-            { 
+            {
                 _Active = false;
                 return false;
             }
             catch (IOException)
-            { 
+            {
                 _Active = false;
                 return false;
             }
@@ -347,7 +340,7 @@ namespace PuppyProxy
         private async Task<byte[]> StreamReadAsync(TcpClient client)
         {
             try
-            { 
+            {
                 Stream stream = client.GetStream();
                 byte[] buffer = new byte[65536];
 
@@ -433,7 +426,7 @@ namespace PuppyProxy
                         }
                     }
                     else
-                    { 
+                    {
                         _Active = false;
                         return;
                     }
@@ -477,7 +470,7 @@ namespace PuppyProxy
                         }
                     }
                     else
-                    { 
+                    {
                         _Active = false;
                         return;
                     }

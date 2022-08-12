@@ -1,13 +1,7 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using SyslogLogging;
+﻿using SyslogLogging;
 
 namespace PuppyProxy
-{    
+{
     internal class TunnelManager
     {
         #region Public-Members
@@ -38,13 +32,13 @@ namespace PuppyProxy
         /// <param name="logging">Logging module instance.</param>
         public TunnelManager(LoggingModule logging)
         {
-            _Logging = logging;  
+            _Logging = logging;
         }
 
         #endregion
 
         #region Internal-Methods
-         
+
         internal void Add(int threadId, Tunnel curr)
         {
             lock (_TunnelsLock)
@@ -53,7 +47,7 @@ namespace PuppyProxy
                 _Tunnels.Add(threadId, curr);
             }
         }
-         
+
         internal void Remove(int threadId)
         {
             lock (_TunnelsLock)
@@ -66,7 +60,7 @@ namespace PuppyProxy
                 }
             }
         }
-         
+
         internal Dictionary<int, Tunnel> GetMetadata()
         {
             Dictionary<int, Tunnel> ret = new Dictionary<int, Tunnel>();
@@ -81,7 +75,7 @@ namespace PuppyProxy
 
             return ret;
         }
-         
+
         internal Dictionary<int, Tunnel> GetFull()
         {
             Dictionary<int, Tunnel> ret = new Dictionary<int, Tunnel>();
@@ -93,7 +87,7 @@ namespace PuppyProxy
 
             return ret;
         }
-         
+
         internal bool Active(int threadId)
         {
             lock (_TunnelsLock)
@@ -103,7 +97,7 @@ namespace PuppyProxy
 
             return false;
         }
-         
+
         internal int Count()
         {
             lock (_TunnelsLock)
@@ -115,7 +109,7 @@ namespace PuppyProxy
         #endregion
 
         #region Private-Methods
-         
+
         #endregion
     }
 }

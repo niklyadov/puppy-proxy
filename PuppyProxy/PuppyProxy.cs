@@ -1,26 +1,19 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.IO;
+﻿using RestWrapper;
+using SyslogLogging;
 using System.Net;
 using System.Net.Sockets;
-using System.Threading;
-using System.Threading.Tasks;
-using RestWrapper;
-using SyslogLogging;
+using System.Text;
 using WatsonWebserver;
-using System.Text; 
 
 namespace PuppyProxy
 {
     class MainClass
-    { 
+    {
         private static string _SettingsFile = null;
         private static Settings _Settings;
         private static LoggingModule _Logging;
-         
-        private static TunnelManager _Tunnels; 
+
+        private static TunnelManager _Tunnels;
         private static SecurityModule _SecurityModule;
 
         private static TcpListener _TcpListener;
@@ -30,7 +23,7 @@ namespace PuppyProxy
         private static int _ActiveThreads = 0;
 
         private static readonly EventWaitHandle Terminator = new EventWaitHandle(false, EventResetMode.ManualReset);
-         
+
         private static void Main(string[] args)
         {
             #region Setup
@@ -54,10 +47,10 @@ namespace PuppyProxy
                 false,
                 true,
                 false);
-             
+
             _Tunnels = new TunnelManager(_Logging);
             _SecurityModule = new SecurityModule(_Logging);
-             
+
             _CancelTokenSource = new CancellationTokenSource();
             _CancelToken = _CancelTokenSource.Token;
 
@@ -98,7 +91,7 @@ namespace PuppyProxy
                             _CancelTokenSource.Cancel();
                             runForever = false;
                             break;
-                             
+
                         case "tunnels":
                             Dictionary<int, Tunnel> tunnels = _Tunnels.GetMetadata();
                             if (tunnels != null && tunnels.Count > 0)
@@ -121,7 +114,7 @@ namespace PuppyProxy
 
             Terminator.WaitOne();
         }
-         
+
         #region Setup-Methods
 
         private static string Logo()
@@ -180,28 +173,28 @@ namespace PuppyProxy
         }
 
         #endregion
-         
+
         #region Connection-Handler
-         
+
         private static void AcceptConnections()
         {
             try
             {
                 if (String.IsNullOrEmpty(_Settings.Proxy.ListenerIpAddress))
                 {
-                    _TcpListener = new TcpListener(IPAddress.Any, _Settings.Proxy.ListenerPort); 
+                    _TcpListener = new TcpListener(IPAddress.Any, _Settings.Proxy.ListenerPort);
                 }
                 else
                 {
-                    _TcpListener = new TcpListener(IPAddress.Parse(_Settings.Proxy.ListenerIpAddress), _Settings.Proxy.ListenerPort); 
+                    _TcpListener = new TcpListener(IPAddress.Parse(_Settings.Proxy.ListenerIpAddress), _Settings.Proxy.ListenerPort);
                 }
 
                 _TcpListener.Start();
 
                 while (!_CancelToken.IsCancellationRequested)
                 {
-                    TcpClient client = _TcpListener.AcceptTcpClient(); 
-                    Task.Run(() => ProcessConnection(client), _CancelToken); 
+                    TcpClient client = _TcpListener.AcceptTcpClient();
+                    Task.Run(() => ProcessConnection(client), _CancelToken);
                 }
             }
             catch (Exception eOuter)
@@ -250,7 +243,7 @@ namespace PuppyProxy
                 #endregion
 
                 #region Build-HttpRequest
-                             
+
                 HttpRequest req = HttpRequest.FromTcpClient(client);
                 if (req == null)
                 {
@@ -263,7 +256,7 @@ namespace PuppyProxy
                 req.SourcePort = clientPort;
                 req.DestIp = serverIp;
                 req.DestPort = serverPort;
-                 
+
                 #endregion
 
                 #region Security-Check
@@ -272,13 +265,13 @@ namespace PuppyProxy
                 bool isPermitted = _SecurityModule.IsPermitted(req, out denyReason);
                 if (!isPermitted)
                 {
-                    _Logging.Info(clientEndpoint + " request denied by security [" + denyReason + "]"); 
+                    _Logging.Info(clientEndpoint + " request denied by security [" + denyReason + "]");
                 }
 
                 #endregion
 
                 #region Process-Connection
-                             
+
                 if (req.Method == WatsonWebserver.HttpMethod.CONNECT)
                 {
                     _Logging.Debug(clientEndpoint + " proxying request via CONNECT to " + req.FullUrl);
@@ -289,14 +282,14 @@ namespace PuppyProxy
                     _Logging.Debug(clientEndpoint + " proxying request to " + req.FullUrl);
 
                     RestResponse resp = ProxyRequest(req).Result;
-                    if (resp != null) 
-                    { 
+                    if (resp != null)
+                    {
                         NetworkStream ns = client.GetStream();
                         await SendRestResponse(resp, ns);
                         await ns.FlushAsync();
-                        ns.Close(); 
+                        ns.Close();
                     }
-                } 
+                }
 
                 #endregion
 
@@ -318,9 +311,9 @@ namespace PuppyProxy
         }
 
         private async static Task<RestResponse> ProxyRequest(HttpRequest request)
-        { 
+        {
             try
-            { 
+            {
                 if (request.Headers != null)
                 {
                     string foundVal = null;
@@ -335,7 +328,7 @@ namespace PuppyProxy
                         }
                     }
 
-                    if (!String.IsNullOrEmpty(foundVal)) request.Headers.Remove(foundVal); 
+                    if (!String.IsNullOrEmpty(foundVal)) request.Headers.Remove(foundVal);
                 }
 
                 RestRequest req = new RestRequest(
@@ -343,7 +336,7 @@ namespace PuppyProxy
                     (RestWrapper.HttpMethod)(Enum.Parse(typeof(RestWrapper.HttpMethod), request.Method.ToString())),
                     request.Headers,
                     request.ContentType);
-                 
+
                 if (request.ContentLength > 0)
                 {
                     return await req.SendAsync(request.ContentLength, request.Data);
@@ -357,7 +350,7 @@ namespace PuppyProxy
             {
                 _Logging.Exception("PuppyProxy", "ProxyRequest", e);
                 return null;
-            } 
+            }
         }
 
         private static void ConnectRequest(int connectionId, TcpClient client, HttpRequest req)
@@ -374,7 +367,7 @@ namespace PuppyProxy
 
                 try
                 {
-                    server.Connect(req.DestHostname, req.DestHostPort); 
+                    server.Connect(req.DestHostname, req.DestHostPort);
                 }
                 catch (Exception)
                 {
@@ -434,11 +427,11 @@ namespace PuppyProxy
             string resp = "HTTP/1.1 200 Connection Established\r\nConnection: close\r\n\r\n";
             return Encoding.UTF8.GetBytes(resp);
         }
-         
+
         private async static Task SendRestResponse(RestResponse resp, NetworkStream ns)
         {
             try
-            { 
+            {
                 byte[] ret = null;
                 string statusLine = resp.ProtocolVersion + " " + resp.StatusCode + " " + resp.StatusDescription + "\r\n";
                 ret = Common.AppendBytes(ret, Encoding.UTF8.GetBytes(statusLine));
@@ -468,10 +461,10 @@ namespace PuppyProxy
                     }
                 }
 
-                ret = Common.AppendBytes(ret, Encoding.UTF8.GetBytes("\r\n")); 
+                ret = Common.AppendBytes(ret, Encoding.UTF8.GetBytes("\r\n"));
 
                 await ns.WriteAsync(ret, 0, ret.Length);
-                await ns.FlushAsync(); 
+                await ns.FlushAsync();
 
                 if (resp.Data != null && resp.ContentLength > 0)
                 {
@@ -479,17 +472,17 @@ namespace PuppyProxy
                     byte[] buffer = new byte[65536];
 
                     while (bytesRemaining > 0)
-                    { 
+                    {
                         int bytesRead = await resp.Data.ReadAsync(buffer, 0, buffer.Length);
                         if (bytesRead > 0)
-                        { 
+                        {
                             bytesRemaining -= bytesRead;
                             await ns.WriteAsync(buffer, 0, bytesRead);
                             await ns.FlushAsync();
                         }
                     }
                 }
-                 
+
                 return;
             }
             catch (Exception e)
